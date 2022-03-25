@@ -1,0 +1,24 @@
+
+- system start up:
+	- there are three component which we need to start up the system: bootloader, kernel, init process 
+	- bootloader:
+		- it is very hardware dependent 
+		- the job is to initalize the hardware and start up the kernel
+	- kernel:
+		- at the begining run hardware dependent code which is responsible for initializing the hardware and then would call kernel_startup
+		- kernel_startup:
+			- high level initalizaion, mount rootfs, start init process 
+
+- linux kernel:
+	- kernel lives in kernel space and can access harware and io directly 
+	- user space is where user code is excuted, it has less privilge and communicate with the kernel using system call 
+	- at any time point the kernel is in one of three state
+		- user space executing user code
+		- kernel space in process context in bahalf of a process
+		- kernel space in interrupt context 
+
+- monolthic kernel:
+	- the kernel is executed as one process and the communication with the user space is achieved using system call
+
+- mikro kernel:
+	- the kernel is divided to many process which would communicate with each other using IPC 

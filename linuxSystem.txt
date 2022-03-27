@@ -16,9 +16,53 @@
 		- user space executing user code
 		- kernel space in process context in bahalf of a process
 		- kernel space in interrupt context 
+	- kernel code has no access to the c library and has no memory proctection 
 
 - monolthic kernel:
 	- the kernel is executed as one process and the communication with the user space is achieved using system call
 
 - mikro kernel:
 	- the kernel is divided to many process which would communicate with each other using IPC 
+
+- priority:
+	- policy is the bahviour of the scheduler which decides what process should run and for how long
+	- the process could be I/O boundary which includes alot of waiting or process bound which mean the process execute code most of the time 
+	- priority value:
+		- nice priority which is the value from -20 to 19 
+		- real time priority from 0  to 99
+		- real time process has more priority than other process which are not real time 
+
+- time slice: 
+	- how lond should the process run too long then the system is no more interactive while too short then the system is slow because the overhead including chaning the context
+	- we assign a proporition of the processor time for each process depending on the load of the system and the weight of each process scheduler make sure that if a process used less than what was assigned to it, it preemt the other process when it is needed
+
+-fair scheduler:
+ - each process receive 1/n of the process time where n in the number of the process on the system
+
+- system call:
+	- user application would call a system call in the c library
+	- in c library software interrupt would be made to change to the kernel mode
+	- in kernel a function related to the system call would be executed
+
+- interrupt:
+	- enable the hardware to signal the processor
+	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
+	- ISR would run while all other interrupt are enabled except his own interrupt line
+
+- timer:
+	- relative timer is to say something would run in 5 seconds in the future, while absolute time is to say something would run at 5 am
+	- kernel knows the tick rate so he knows the time between every tick as it is nothing rather than 1/ticks second
+	- HZ is the number of tickes per second  
+	- jiffies is the amount of times has passed since the system has booted 
+	- if u want to compare any time u should convert then to signed value and start to compare the values
+		- ex: time_before(a,b) int(a) -int(b) < 0
+		- it depends on the fact that when overflow in signed variable happens it start couting from the highest negatvie to the lowest negative
+		- 0 1 2 3 ..244 255 -255 -244 ..3 2 1 0
+	- sytem timers:
+		- hardware would issue an interrupt at fixed freqency 
+		- timer handler would be invoked in response to this interrupt and would update system timer 
+
+	- dynamic timer:
+		- it is a way to schedule a function to run in the future at a specific time point
+
+	-

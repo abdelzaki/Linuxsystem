@@ -17,6 +17,14 @@
 		- kernel space in process context in bahalf of a process
 		- kernel space in interrupt context 
 	- kernel code has no access to the c library and has no memory proctection 
+- user space:
+	- the code which runs in a low provolige mode
+	- it is linked into glibc 
+
+- glibc:
+	- every user applictioon in the kernel is linked into glibc 
+	- glibc would implement the system call which is needed to access the kernel from the user land
+	 - 
 
 - monolthic kernel:
 	- the kernel is executed as one process and the communication with the user space is achieved using system call
@@ -65,4 +73,28 @@
 	- dynamic timer:
 		- it is a way to schedule a function to run in the future at a specific time point
 
-	-
+- LKM frame work:
+	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
+	- compile a piece of code outside the kernel source code 
+	- if u build a module and insert it after u build the kernel we call it out of tree code
+	- to build a module:
+		- source file
+		- header file
+		- make file
+		- make
+	- the module would be built and .ko file would be generated then u can install it using insmod command 
+
+- LKM:
+	- module has entry point with is given by the function module_init()
+	- u insert the module using the command insmod and the path to the module
+	- rmmod to delete the module
+	- in both cases u need root user to achieve it 
+
+- LKM make file:
+	- the name of the module which u want to build is giving using:
+		obj-m +=name_of_module.o
+	- rule:
+		make -C "kernel source code" M=$(PWD) modules 
+
+- printk:
+	- it write to dmesg which is a ring buffer

@@ -98,3 +98,17 @@
 
 - printk:
 	- it write to dmesg which is a ring buffer
+
+- threads: 
+	- visual address space
+	- every user space thread has two stacks one in user space and another one in ´the kernel space
+	- for every thread in the kernel space there is a task_struct to represent the thread
+	- VAS of the process consist of text, data, heap, library and stack  
+
+- task_struct:
+	- it has all the information we need to represent a thread
+	- it is chained in a linked list called task list 
+	- to get the task_struct in the kernel code we use current marco which yield a pointer to the task_struct 
+	- current is only valid when we run in process context
+	-
+

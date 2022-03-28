@@ -61,6 +61,7 @@
 	- each process receive 1/n of the process time where n in the number of the process on the system
 	- we pick the task with the highest waiting time in the running queue 
 	- the update of the process happen by timer interrupt
+	- chaning the process happens when the proces return from system call
 
 - system call:
 	- user application would call a system call in the c library

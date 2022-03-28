@@ -25,12 +25,25 @@
 	- every user applictioon in the kernel is linked into glibc 
 	- glibc would implement the system call which is needed to access the kernel from the user land
 	 - 
+- kernel:
+	- resource manager(CPU time, memory, scheduler )
+	- abstraction layer between user application and the hardware
 
 - monolthic kernel:
 	- the kernel is executed as one process and the communication with the user space is achieved using system call
 
 - mikro kernel:
 	- the kernel is divided to many process which would communicate with each other using IPC 
+
+- user space vs kernel space:
+	- normally the process is in user space
+	- switching from user space to kernel space happens in 2 cases:
+		- system call
+		- interrupt
+
+- preemtive:
+	- in user space process can interrupt another process if it has a higher priority
+	- in kernel land only interrupt can interrupt the process
 
 - priority:
 	- policy is the bahviour of the scheduler which decides what process should run and for how long
@@ -45,12 +58,28 @@
 	- we assign a proporition of the processor time for each process depending on the load of the system and the weight of each process scheduler make sure that if a process used less than what was assigned to it, it preemt the other process when it is needed
 
 -fair scheduler:
- - each process receive 1/n of the process time where n in the number of the process on the system
+	- each process receive 1/n of the process time where n in the number of the process on the system
+	- we pick the task with the highest waiting time in the running queue 
+	- the update of the process happen by timer interrupt
 
 - system call:
 	- user application would call a system call in the c library
 	- in c library software interrupt would be made to change to the kernel mode
 	- in kernel a function related to the system call would be executed
+
+- threads: 
+	- visual address space
+	- every user space thread has two stacks one in user space and another one in ´the kernel space
+	- for every thread in the kernel space there is a task_struct to represent the thread
+	- VAS of the process consist of text, data, heap, library and stack  
+
+- task_struct:
+	- it has all the information we need to represent a thread
+	- it is chained in a linked list called task list 
+	- to get the task_struct in the kernel code we use current marco which yield a pointer to the task_struct 
+	- current is only valid when we run in process context
+	-
+
 
 - interrupt:
 	- enable the hardware to signal the processor
@@ -72,6 +101,19 @@
 
 	- dynamic timer:
 		- it is a way to schedule a function to run in the future at a specific time point
+
+- memory:
+	- KiB and KB:
+		- as computer is based on binary system KiB is the suitable meachanism 
+		- KiB = 2^10 which is 1024
+		- KB = 10^3 which is 1000
+	-  virtual and physical memory:
+		- page frame : physical memory
+		- page : virtual memory
+
+- page table:
+	- for each process the kernel create a table which maps the virtual address to physical address 
+	- the table exists in the kernel so a process can access only memory which the kernel has allowed
 
 - LKM frame work:
 	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
@@ -99,16 +141,26 @@
 - printk:
 	- it write to dmesg which is a ring buffer
 
-- threads: 
-	- visual address space
-	- every user space thread has two stacks one in user space and another one in ´the kernel space
-	- for every thread in the kernel space there is a task_struct to represent the thread
-	- VAS of the process consist of text, data, heap, library and stack  
 
-- task_struct:
-	- it has all the information we need to represent a thread
-	- it is chained in a linked list called task list 
-	- to get the task_struct in the kernel code we use current marco which yield a pointer to the task_struct 
-	- current is only valid when we run in process context
-	-
 
+- VAS:
+	- every file would be linked into glibc as default
+	- the upper part of the VAS is always the kernel and it is address started from the PAGE_OFFSET 
+	- lowmem of the kernel where the memory is directed mapped to the VAS with the max size of 768 MB
+	- to change from physical to logical address
+		PA = kVA - Page_offset
+
+reference counting:
+	- it is a way to keep track of the c structure
+	- by embedded koject in any structure u can use reference counting
+
+- kobject:
+	- struct kobject { const char* k_name; struct kref kref; struct list_head entry; struct kobject* parent; struct kset* kset; struct kobj_type * ktype; struct sysfs_dirent * sd; };
+	- k_name: the name which is used by sysfs subsystem
+	- kref: using in reference managment
+	- entry: groups kobjects in list
+	- kset: grouping the object in set
+	- parent: point to the parent
+	- ktype: information about the data structure in which the object is embedded, of greatest importance is the destructore 
+
+- kset: struct kset {struct kobj_type * ktype; struct list_head list; struct kobject kobj; struct kset_uevent_ops * uevent_ops; };

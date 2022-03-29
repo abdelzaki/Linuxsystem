@@ -166,6 +166,26 @@ reference counting:
 	- u can see the version of the kernel using the command cat /proc/version
 	- kernel is designed to support different platform when u choice a specific arch in the make file u force the build system to choice the code from a specific folder ex:arm
 
-- vmlinux:
-	- it is stand alone ELF file which has all the symbol resolved 
-	- it consists of multiple files like head.o which is in charge of initalize the kernel
+- configuration:
+	-  .config file is produced which has all the configuration which affects the build, while the building it would converted to header file 
+	- make disclean:
+		- it would delete the .config file from the source file system
+	- make menuconfig:
+		- u get to change the config file using menu 
+	- make defconfig:
+		- update the configuration by the default value based on the target type
+- target:
+	- vmlinux:
+		- it is stand alone ELF file which has all the symbol resolved 
+		- it consists of multiple files like head.o which is in charge of initalize the kernel
+	- zImage:
+		- it is compressend vmlinux of the kernel
+	- uImage:
+		- it is zImage + uboot header 
+	- module:
+		- build all module which is configured with menuconfig als module
+	- module_install:
+		- install the modules in the path which is defined by INSTALL_MOD_PATH
+
+linux start up:
+	- power on then the bootloader would be executed which has the task to initalize the hardware then would load the kernel to the memory at this point MMU is not active, the kernel image has bootstrape load in itself which has the task to enable MMU and page table this code is made by the CPU vendor not by linux then the call start_kernel() which is developed by linux which would parse the command line and start the init process

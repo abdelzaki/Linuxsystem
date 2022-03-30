@@ -84,6 +84,14 @@
 	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
 	- ISR would run while all other interrupt are enabled except his own interrupt line
 
+- PIC:
+	- programmer interrupt controller
+	- devices are connected to the PIC
+	- when the device rise an interrupt the PIC connvert the signal to a vector and store it in I/O port which can be read by the CPU and interrupt the CPU which would read the vector and then write the PIC port, PIC would reset the interrupt line of the CPU
+	 
+
+
+
 - timer:
 	- relative timer is to say something would run in 5 seconds in the future, while absolute time is to say something would run at 5 am
 	- kernel knows the tick rate so he knows the time between every tick as it is nothing rather than 1/ticks second
@@ -136,9 +144,6 @@
 	- rule:
 		make -C "kernel source code" M=$(PWD) modules 
 
-- printk:
-	- it write to dmesg which is a ring buffer
-
 - VAS:
 	- every file would be linked into glibc as default
 	- the upper part of the VAS is always the kernel and it is address started from the PAGE_OFFSET 
@@ -146,7 +151,29 @@
 	- to change from physical to logical address
 		PA = kVA - Page_offset
 
-reference counting:
+- char device:
+	- it is the idea that u isolate the code which deal with the hardware from the application, for example application which use the write system call on a harddisk should not care whether the harddisk sector is 512 or 1024 byte sector. device driver should handle this issue without bothering the application
+	- 
+
+- block device:
+	- it has the ability to access the data on fixed chuck size 
+	- it has the ability to access the data in random access
+
+- partition:
+	- it is a logic deviation of storage medium
+
+- MTD:
+	- memory technology device
+	- it is not a block device  
+	- it implements read, write and erase functions
+	- flash has flash translation layer which provide API to the application
+	- it has software partition 
+	- CFI:
+		- comman flash interface 
+		- enabled by selection CONFIG_MTD_CFI 
+		- it determine the flash chip characters such as manufacture, device type, erase block size and where the partiton table is stored
+
+- reference counting:
 	- it is a way to keep track of the c structure
 	- by embedded koject in any structure u can use reference counting
 
@@ -188,4 +215,23 @@ reference counting:
 		- install the modules in the path which is defined by INSTALL_MOD_PATH
 
 linux start up:
-	- power on then the bootloader would be executed which has the task to initalize the hardware then would load the kernel to the memory at this point MMU is not active, the kernel image has bootstrape load in itself which has the task to enable MMU and page table this code is made by the CPU vendor not by linux then the call start_kernel() which is developed by linux which would parse the command line and start the init process
+	- power on then the bootloader would be executed which has the task to initalize the hardware then would load the kernel to the memory at this point MMU is not active, the kernel image has bootstrape load in itself which has the task to enable MMU and page table this code is made by the CPU vendor not by linux then the call start_kernel() which is developed by linux which would parse the command line and start the init process, at the end the kernel search fot the init process in one of four places:
+	- run_init_process(“/sbin/init”);
+	- run_init_process(“/etc/init”);
+	- run_init_process(“/bin/init”);
+	- run_init_process(“/bin/sh”);
+
+- root file system:
+	- it referes to the file system which is mounted at the / point in the system 
+	- in /bin there would be the busybox and softlink to sh so the init process would be busybox
+	- the starting scripts in rcS
+	- in /lib there would be the modules of linux 
+
+- init process:
+	- using busybox to decide what process would run at the begining u configure inittab -> /etc/inittab with run level.
+	- when init starts it reads inittab under /etc/inittab
+	- by providing the initial ram disk to the linux kernel kernel would copy it to kernel memory
+	- by providing root=/dev/ram0 then the initial RAM disk stay in memory
+
+- printk:
+	- it write to dmesg which is a ring buffer

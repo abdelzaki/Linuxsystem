@@ -56,7 +56,7 @@
 	- how lond should the process run too long then the system is no more interactive while too short then the system is slow because the overhead including chaning the context
 	- we assign a proporition of the processor time for each process depending on the load of the system and the weight of each process scheduler make sure that if a process used less than what was assigned to it, it preemt the other process when it is needed
 
--fair scheduler:
+- fair scheduler:
 	- each process receive 1/n of the process time where n in the number of the process on the system
 	- we pick the task with the highest waiting time in the running queue 
 	- the update of the process happen by timer interrupt
@@ -187,6 +187,25 @@
 	- ktype: information about the data structure in which the object is embedded, of greatest importance is the destructore 
 
 - kset: struct kset {struct kobj_type * ktype; struct list_head list; struct kobject kobj; struct kset_uevent_ops * uevent_ops; };
+
+- VFS:
+	- virtual file system
+	- it provides an abstaction between the application and the file system inplemention
+	- it handles the system call which is relevant to the file system like open,read,copy,
+	- not all system call require that the VFS send interact with the actual file system, when we issue close system call there is no need that the VFS interact with the actual file system it just hast to release the resourcess from the RAM
+	- each file system should translate it is implementation to linux file system model
+	- common file model of linux:
+		- superblock: 
+			- store information about the mounted file system 
+		- inode:
+			- store information about a specific file 
+		- file:
+			- store information about the interaction between an open file and a process 
+		- dentry:
+			- store information about the linking of directory entery 
+
+
+
 
 - building the kernel:
 	- in the top level makefile in the source code the macro KERNELVERSION is defined 

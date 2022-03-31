@@ -161,6 +161,17 @@
 
 - partition:
 	- it is a logic deviation of storage medium
+	- it has meta data for the partition and then the data which is inside the partiton 
+	- the idea behind the partiton that each partition can has it is own file system type
+	- the kernel can then mount the file system of this partition
+
+- block size:
+	- big block size has disadvantage that the waste of the space might happen as if we have a file which size is block size + 1 byte it would occupy 2 block size
+	- small block size has disadvantage that the meta data requires to map the block to a file would be large 
+
+- ext2:
+	- to build the file system as ext2 we use the utility mkfs.ext2 which is similar to the command format in DOS
+	-  
 
 - MTD:
 	- memory technology device
@@ -173,22 +184,8 @@
 		- enabled by selection CONFIG_MTD_CFI 
 		- it determine the flash chip characters such as manufacture, device type, erase block size and where the partiton table is stored
 
-- reference counting:
-	- it is a way to keep track of the c structure
-	- by embedded koject in any structure u can use reference counting
 
-- kobject:
-	- struct kobject { const char* k_name; struct kref kref; struct list_head entry; struct kobject* parent; struct kset* kset; struct kobj_type * ktype; struct sysfs_dirent * sd; };
-	- k_name: the name which is used by sysfs subsystem
-	- kref: using in reference managment
-	- entry: groups kobjects in list
-	- kset: grouping the object in set
-	- parent: point to the parent
-	- ktype: information about the data structure in which the object is embedded, of greatest importance is the destructore 
-
-- kset: struct kset {struct kobj_type * ktype; struct list_head list; struct kobject kobj; struct kset_uevent_ops * uevent_ops; };
-
-- VFS:
+- VFS: 
 	- virtual file system
 	- it provides an abstaction between the application and the file system inplemention
 	- it handles the system call which is relevant to the file system like open,read,copy,
@@ -205,6 +202,20 @@
 			- store information about the linking of directory entery 
 
 
+- reference counting:
+	- it is a way to keep track of the c structure
+	- by embedded koject in any structure u can use reference counting
+
+- kobject:
+	- struct kobject { const char* k_name; struct kref kref; struct list_head entry; struct kobject* parent; struct kset* kset; struct kobj_type * ktype; struct sysfs_dirent * sd; };
+	- k_name: the name which is used by sysfs subsystem
+	- kref: using in reference managment
+	- entry: groups kobjects in list
+	- kset: grouping the object in set
+	- parent: point to the parent
+	- ktype: information about the data structure in which the object is embedded, of greatest importance is the destructore 
+
+- kset: struct kset {struct kobj_type * ktype; struct list_head list; struct kobject kobj; struct kset_uevent_ops * uevent_ops; };
 
 
 - building the kernel:

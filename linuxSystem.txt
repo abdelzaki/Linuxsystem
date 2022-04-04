@@ -80,9 +80,21 @@
 	- current is only valid when we run in process context
 
 - interrupt:
+	- interrupt controller:
+		- in x86 it is called PIC or APIC
+		- in ARM it is called GIC
 	- enable the hardware to signal the processor
 	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
 	- ISR would run while all other interrupt are enabled except his own interrupt line
+
+- to register an interrupt handler to handle a specific interrupt we use the following API: 
+	- request_irq(unsigned int irq, irq_handler_t (*handler_func)(int, void *), unsigned long flags, const char *name, void *dev):
+	- u can tell that request_irq() is simliar to signal hanlder in user land but the interupt handler runs in kernel land
+
+- Level interrupt and Edge Interrupt:
+	- Level: the interrupt would be fired when the line in the CPU  changed from 0 to 1 and stay active untill the application deassert the line, that means the interrupt handler might be recalled if the interrupt was not cleared
+
+	- Edge: the interrupt handler would be invoked only when the line to the CPU is changed from 0 to 1, no deassertion is required.
 
 - PIC:
 	- programmer interrupt controller
@@ -171,19 +183,30 @@
 
 - ext2:
 	- to build the file system as ext2 we use the utility mkfs.ext2 which is similar to the command format in DOS
-	-  
 
 - MTD:
 	- memory technology device
-	- it is not a block device  
+	- it is not a block device rather a char deivce driver
 	- it implements read, write and erase functions
+	- it has wear level functionality
+	- Flash card or USB flash is not mtd device but has FTL to handle this functionality
 	- flash has flash translation layer which provide API to the application
 	- it has software partition 
 	- CFI:
 		- comman flash interface 
 		- enabled by selection CONFIG_MTD_CFI 
 		- it determine the flash chip characters such as manufacture, device type, erase block size and where the partiton table is stored
+		- by CFI u can use different chip from the same vendor as the configuration is written in the flash itself so u dont need to change any thing if u changed the chip  
+	- 
 
+- FLash:
+	- you can decide to store the data on the flash as RAW data or as file system
+	- Raw data has the benefits that u do not require file system 
+	- flash could by NAND or NOR flash
+	- NAND:
+		- the flash is divide to block -> page which is data + out of band data
+		- block: here erase is implemented
+		- page: read / write is implemented
 
 - VFS: 
 	- virtual file system
@@ -201,7 +224,6 @@
 		- dentry:
 			- store information about the linking of directory entery 
 
-
 - reference counting:
 	- it is a way to keep track of the c structure
 	- by embedded koject in any structure u can use reference counting
@@ -216,6 +238,35 @@
 	- ktype: information about the data structure in which the object is embedded, of greatest importance is the destructore 
 
 - kset: struct kset {struct kobj_type * ktype; struct list_head list; struct kobject kobj; struct kset_uevent_ops * uevent_ops; };
+
+- procfs:
+	- it exists only in the RAM
+	- it is mounted under /proc
+	- to create directory in procfs: 
+		- struct proc_dir_entry *proc_mkdir(const char *name, struct proc_dir_entry *parent);
+	
+- sysfs:
+	- it is a tree like structure where bus, device, driver are implemented
+	- the file system are in /sys implemented
+	- to create file under sys directory: 
+		- device_create_file(struct device *dev, const struct device_attribute *attr);
+
+- page table:
+	- it exists in each process
+	- it maps the virtual address to physical address
+	- page frame is the address in the RAM while page is the VM address
+	- it exists in the kernel user space
+	- virtual address are consist of table index and offset inside the memory
+	- table index:
+		- divide the table index into 2 directory so u dont have to have large contingous memory for the page table
+
+- working with the I/O:
+	- memory mapped I/O:
+		- they are address space in the processor which is mapped to I/O region
+
+	- port mapped I/O:
+		- instructions which is only used to work with the I/O 
+
 
 
 - building the kernel:

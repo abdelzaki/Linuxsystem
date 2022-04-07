@@ -8,6 +8,11 @@
 		- kernel_startup:
 			- high level initalizaion, mount rootfs, start init process 
 
+- HW requirment:
+	- RAM at least 8 Mb
+	- storage: at least 4 MB
+
+
 - linux kernel:
 	- kernel lives in kernel space and can access harware and io directly 
 	- user space is where user code is excuted, it has less privilge and communicate with the kernel using system call 
@@ -96,14 +101,15 @@
 
 	- Edge: the interrupt handler would be invoked only when the line to the CPU is changed from 0 to 1, no deassertion is required.
 
+- interrupt handler:
+	- u should not call any function which might call schedule
+	- the interrupt by default mask all interrupt lines in the core which execute the interrupt and mask the interrupt line on all the cores 
+
 - PIC:
 	- programmer interrupt controller
 	- devices are connected to the PIC
 	- when the device rise an interrupt the PIC connvert the signal to a vector and store it in I/O port which can be read by the CPU and interrupt the CPU which would read the vector and then write the PIC port, PIC would reset the interrupt line of the CPU
 	 
-
-
-
 - timer:
 	- relative timer is to say something would run in 5 seconds in the future, while absolute time is to say something would run at 5 am
 	- kernel knows the tick rate so he knows the time between every tick as it is nothing rather than 1/ticks second
@@ -207,6 +213,17 @@
 		- the flash is divide to block -> page which is data + out of band data
 		- block: here erase is implemented
 		- page: read / write is implemented
+
+- address:
+	- physical address:
+		- address between CPU and the memory
+	- bus address:
+		- address of a peropheral	
+	- kernel logical address:
+		- it differts only from the physical address by offset
+		- macro like __pa() and __va() can be used to convert between logical and physical address space
+	- kernel virtual address:
+		- it is not contingous and mapped to the memory as individual parts
 
 - VFS: 
 	- virtual file system

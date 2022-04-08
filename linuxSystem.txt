@@ -71,6 +71,7 @@
 	- user application would call a system call in the c library
 	- in c library software interrupt would be made to change to the kernel mode
 	- in kernel a function related to the system call would be executed
+	- clibrary pass the data to the system call by register but if there is more data to pass than the register then it is stored in block of memory and the in the register the address of this block would be sent 
 
 - threads: 
 	- visual address space
@@ -83,6 +84,17 @@
 	- it is chained in a linked list called task list 
 	- to get the task_struct in the kernel code we use current marco which yield a pointer to the task_struct 
 	- current is only valid when we run in process context
+
+- process:
+	- it is a program in execution 
+	- process memory consist of text section, data section, stack, heap
+	- process state:
+		- the process is created and it is ready to be executed 
+		- when the time slice ends schedule makes another process active
+		- if it is waiting for I/O it moves to a specifi waitqueue 
+	- to get to know the active process on the system:
+		- ps -el
+
 
 - interrupt:
 	- interrupt controller:
@@ -330,6 +342,8 @@ linux start up:
 	- when init starts it reads inittab under /etc/inittab
 	- by providing the initial ram disk to the linux kernel kernel would copy it to kernel memory
 	- by providing root=/dev/ram0 then the initial RAM disk stay in memory
+
+
 
 - printk:
 	- it write to dmesg which is a ring buffer

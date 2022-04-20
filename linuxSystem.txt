@@ -1,13 +1,3 @@
-- system start up:
-	- there are three component which we need to start up the system: bootloader, kernel, init process 
-	- bootloader:
-		- it is very hardware dependent 
-		- the job is to initalize the hardware and start up the kernel
-	- kernel:
-		- at the begining run hardware dependent code which is responsible for initializing the hardware and then would call kernel_startup
-		- kernel_startup:
-			- high level initalizaion, mount rootfs, start init process 
-
 - HW requirment:
 	- RAM at least 8 Mb
 	- storage: at least 4 MB
@@ -38,12 +28,91 @@
 
 - mikro kernel:
 	- the kernel is divided to many process which would communicate with each other using IPC 
+	- kernel module runs as application with MMU need as they donot share the address space 
+
+- linux module:
+	- linux is divided to a well known modules 
+		- HAL:	
+			- it is used to manage CPU, MMU, DMA, Timers
+		- Scheduler:
+			- scheduler works with kernel threads, user process, threads which is part of a process
+		- file system: 
+			- it uses VFS which is used to provide the same API to deal with different file systems such as ext2, jffs2, etc
+		- I/O:
+			- provides char, block, network devices 
+
+- build process:
+	- in the host machine we have to install gcc, make and perl using the following command
+		- sudo apt install gcc make perl 
+	- to install the cross compile tool chain which enables u to compile arm code on intel processor use the following command
+		- sudo apt install crossbuild-essential-armhf
+		- this would install the tools need such as compiler, linker, objdump, etc
+	- to find the kernel which is running u can use the command 
+		- uname -r 
+	- build the kernel:
+		- download source code of the kernel 
+		- configure the kernel using:
+			- make defconfig
+				- it is used to apply the default configuration of the kernel
+			- make menuconfig
+				- it is used to adjust the configuration according to 
+		- build the kernel 
+			- make all
+		- install the modules under /lib/modules/$(uname -r ) using
+			- make modules_install
+
+
+- LKM frame work:
+	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
+	- compile a piece of code outside the kernel source code 
+	- if u build a module and insert it after u build the kernel we call it out of tree code
+	- to build a module:
+		- source file
+		- header file
+		- make file
+		- make
+	- the module would be built and .ko file would be generated then u can install it using insmod command 
+
+- LKM:
+	- module has entry point with is given by the function module_init()
+	- u insert the module using the command insmod and the path to the module
+	- rmmod to delete the module
+	- in both cases u need root user to achieve it 
+
+- LKM make file:
+	- the name of the module which u want to build is giving using:
+		obj-m +=name_of_module.o
+	- rule:
+		make -C "kernel source code" M=$(PWD) modules 
+
+- system start up:
+	- there are three component which we need to start up the system: bootloader, kernel, init process 
+	- bootloader:
+		- it is very hardware dependent 
+		- the job is to initalize the hardware and start up the kernel
+	- kernel:
+		- at the begining run hardware dependent code which is responsible for initializing the hardware, setup stack, mmu initalize, load interrupt table and then would call kernel_startup
+		- kernel_startup:
+			- high level initalizaion, mount rootfs, start init process 
+	- init process:
+		- it would have PID of 1 
+		- it is defined in etc/initab 
+		- normally u would mount special file system such as proc and start services such as DHCP, ssh, etc
 
 - user space vs kernel space:
 	- normally the process is in user space
 	- switching from user space to kernel space happens in 2 cases:
 		- system call
 		- interrupt
+
+- scheduler:
+	- critieria to measure the scheduler:
+		- CPU utilization
+		- waiting time
+		- throughput: the amount of process is done per time of unit 
+		- algorithums:
+			- FIFO:
+			- short job first:
 
 - preemtive:
 	- in user space process can interrupt another process if it has a higher priority
@@ -86,21 +155,27 @@
 	- current is only valid when we run in process context
 
 - process:
-	- it is a program in execution 
+	- it is an instance of a program in execution 
+	- from kernel point of view process is something where the kernel has to provide resourcess like CPU, memory, etc.
 	- process memory consist of text section, data section, stack, heap
+	- u can identify a process using PID each process has a unique PID 
+	- using current u can address task_struct of the kernel process
 	- process state:
 		- the process is created and it is ready to be executed 
 		- when the time slice ends schedule makes another process active
 		- if it is waiting for I/O it moves to a specifi waitqueue 
+	- hardware context:
+		- it refers to the operation of saving old registers of the process which is scheduled out and restoring the registers of the process which is scheduled in
 	- to get to know the active process on the system:
 		- ps -el
-
 
 - interrupt:
 	- interrupt controller:
 		- in x86 it is called PIC or APIC
 		- in ARM it is called GIC
 	- enable the hardware to signal the processor
+	- there is IDT which has pointer to functions which should be called when interrupts happen 
+	- kernel should tell the CPU where to find this table before enabling the interrupts 
 	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
 	- ISR would run while all other interrupt are enabled except his own interrupt line
 
@@ -150,29 +225,7 @@
 - page table:
 	- for each process the kernel create a table which maps the virtual address to physical address 
 	- the table exists in the kernel so a process can access only memory which the kernel has allowed
-
-- LKM frame work:
-	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
-	- compile a piece of code outside the kernel source code 
-	- if u build a module and insert it after u build the kernel we call it out of tree code
-	- to build a module:
-		- source file
-		- header file
-		- make file
-		- make
-	- the module would be built and .ko file would be generated then u can install it using insmod command 
-
-- LKM:
-	- module has entry point with is given by the function module_init()
-	- u insert the module using the command insmod and the path to the module
-	- rmmod to delete the module
-	- in both cases u need root user to achieve it 
-
-- LKM make file:
-	- the name of the module which u want to build is giving using:
-		obj-m +=name_of_module.o
-	- rule:
-		make -C "kernel source code" M=$(PWD) modules 
+	- when context switch happens register in the CPU would be chaged to point to the page table of this process 
 
 - VAS:
 	- every file would be linked into glibc as default
@@ -200,12 +253,26 @@
 	- small block size has disadvantage that the meta data requires to map the block to a file would be large 
 
 - file system:
+
 	- the role of the file system is to provide 2 interface:
 		- user interface is what the user should see 
 		- how the data is stored in the file system and how u can retieve the data 
 
+	- there are different file system some are done to implemente good storage other is done for speed 
+
+
 - ext2:
 	- to build the file system as ext2 we use the utility mkfs.ext2 which is similar to the command format in DOS
+
+- JFFS2:
+	- journal flash file system
+	- u need utility to build the file system to support this file system 
+		- mkfs.jffs2:
+			- -i or -b: little or big indian
+			- -n: no clean marker 
+			- -e: size of clean block 
+			- -o: the output to be produced
+			- -s: page size 
 
 - MTD:
 	- memory technology device
@@ -215,6 +282,10 @@
 	- Flash card or USB flash is not mtd device but has FTL to handle this functionality
 	- flash has flash translation layer which provide API to the application
 	- it has software partition 
+	- bad block table is stored at the last two blocks of the flash
+	- mtd subsystem is divided to application and drivers and export the device as char and block deivce as some operation is possible only on char while other are possible only on block device
+	- mtd is divided to application and drivers application is what i write , driver is how to write it 
+
 	- CFI:
 		- comman flash interface 
 		- enabled by selection CONFIG_MTD_CFI 
@@ -226,6 +297,8 @@
 	- you can decide to store the data on the flash as RAW data or as file system
 	- Raw data has the benefits that u do not require file system 
 	- flash could by NAND or NOR flash
+	- flash means the data is stored electrically not hardware movent parts are required
+	- it consists of controller and flash itself 
 	- NAND:
 		- the flash is divide to block -> page which is data + out of band data
 		- block: here erase is implemented
@@ -301,14 +374,14 @@
 	- port mapped I/O:
 		- instructions which is only used to work with the I/O 
 
-
-
 - building the kernel:
 	- in the top level makefile in the source code the macro KERNELVERSION is defined 
 	- u can see the version of the kernel using the command cat /proc/version
 	- kernel is designed to support different platform when u choice a specific arch in the make file u force the build system to choice the code from a specific folder ex:arm
 
 - configuration:
+	- the idea is to build the kernel with capabilities which u only need as if u build the kernel which support every thing it would be very big to handle 
+
 	-  .config file is produced which has all the configuration which affects the build, while the building it would converted to header file 
 	- make disclean:
 		- it would delete the .config file from the source file system
@@ -348,7 +421,21 @@ linux start up:
 	- by providing the initial ram disk to the linux kernel kernel would copy it to kernel memory
 	- by providing root=/dev/ram0 then the initial RAM disk stay in memory
 
+- component of embedded linux:
+	- kernel:
+		- which handle the resourcess
 
+	- GNU c:
+		- tool chain to build the kernel
+		- it depends on a specific C library
 
-- printk:
-	- it write to dmesg which is a ring buffer
+	- c library:
+		- provide system call which enable user code to access the kernel
+		- 
+	- bootloader:
+		- load the kernel from flash to ram and execute the kernel 
+
+- uboot:
+	- bad block is "block not a page" if u marked a block as bad then i wont be read from or write to
+	- the bad block is at the end of the flash
+	- nand bad block number * erase block size 

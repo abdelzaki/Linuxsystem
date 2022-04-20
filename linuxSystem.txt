@@ -199,6 +199,11 @@
 	- big block size has disadvantage that the waste of the space might happen as if we have a file which size is block size + 1 byte it would occupy 2 block size
 	- small block size has disadvantage that the meta data requires to map the block to a file would be large 
 
+- file system:
+	- the role of the file system is to provide 2 interface:
+		- user interface is what the user should see 
+		- how the data is stored in the file system and how u can retieve the data 
+
 - ext2:
 	- to build the file system as ext2 we use the utility mkfs.ext2 which is similar to the command format in DOS
 

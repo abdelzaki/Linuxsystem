@@ -45,6 +45,15 @@
 		- system call
 		- interrupt
 
+- scheduler:
+	- critieria to measure the scheduler:
+		- CPU utilization
+		- waiting time
+		- throughput: the amount of process is done per time of unit 
+		- algorithums:
+			- FIFO:
+			- short job first:
+
 - preemtive:
 	- in user space process can interrupt another process if it has a higher priority
 	- in kernel land only interrupt can interrupt the process
@@ -86,21 +95,27 @@
 	- current is only valid when we run in process context
 
 - process:
-	- it is a program in execution 
+	- it is an instance of a program in execution 
+	- from kernel point of view process is something where the kernel has to provide resourcess like CPU, memory, etc.
 	- process memory consist of text section, data section, stack, heap
+	- u can identify a process using PID each process has a unique PID 
+	- using current u can address task_struct of the kernel process
 	- process state:
 		- the process is created and it is ready to be executed 
 		- when the time slice ends schedule makes another process active
 		- if it is waiting for I/O it moves to a specifi waitqueue 
+	- hardware context:
+		- it refers to the operation of saving old registers of the process which is scheduled out and restoring the registers of the process which is scheduled in
 	- to get to know the active process on the system:
 		- ps -el
-
 
 - interrupt:
 	- interrupt controller:
 		- in x86 it is called PIC or APIC
 		- in ARM it is called GIC
 	- enable the hardware to signal the processor
+	- there is IDT which has pointer to functions which should be called when interrupts happen 
+	- kernel should tell the CPU where to find this table before enabling the interrupts 
 	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
 	- ISR would run while all other interrupt are enabled except his own interrupt line
 
@@ -150,6 +165,7 @@
 - page table:
 	- for each process the kernel create a table which maps the virtual address to physical address 
 	- the table exists in the kernel so a process can access only memory which the kernel has allowed
+	- when context switch happens register in the CPU would be chaged to point to the page table of this process 
 
 - LKM frame work:
 	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
@@ -199,8 +215,15 @@
 	- big block size has disadvantage that the waste of the space might happen as if we have a file which size is block size + 1 byte it would occupy 2 block size
 	- small block size has disadvantage that the meta data requires to map the block to a file would be large 
 
+- file system:
+	- there are different file system some are done to implemente good storage other is done for speed 
+	- 
+
 - ext2:
 	- to build the file system as ext2 we use the utility mkfs.ext2 which is similar to the command format in DOS
+
+- JFFS2:
+	- journal flash file system  
 
 - MTD:
 	- memory technology device
@@ -221,6 +244,8 @@
 	- you can decide to store the data on the flash as RAW data or as file system
 	- Raw data has the benefits that u do not require file system 
 	- flash could by NAND or NOR flash
+	- flash means the data is stored electrically not hardware movent parts are required
+	- it consists of controller and flash itself 
 	- NAND:
 		- the flash is divide to block -> page which is data + out of band data
 		- block: here erase is implemented
@@ -296,14 +321,14 @@
 	- port mapped I/O:
 		- instructions which is only used to work with the I/O 
 
-
-
 - building the kernel:
 	- in the top level makefile in the source code the macro KERNELVERSION is defined 
 	- u can see the version of the kernel using the command cat /proc/version
 	- kernel is designed to support different platform when u choice a specific arch in the make file u force the build system to choice the code from a specific folder ex:arm
 
 - configuration:
+	- the idea is to build the kernel with capabilities which u only need as if u build the kernel which support every thing it would be very big to handle 
+	
 	-  .config file is produced which has all the configuration which affects the build, while the building it would converted to header file 
 	- make disclean:
 		- it would delete the .config file from the source file system
@@ -343,7 +368,19 @@ linux start up:
 	- by providing the initial ram disk to the linux kernel kernel would copy it to kernel memory
 	- by providing root=/dev/ram0 then the initial RAM disk stay in memory
 
+- component of embedded linux:
+	- kernel:
+		- which handle the resourcess
 
+	- GNU c:
+		- tool chain to build the kernel
+		- it depends on a specific C library
+
+	- c library:
+		- provide system call which enable user code to access the kernel
+		- 
+	- bootloader:
+		- load the kernel from flash to ram and execute the kernel 
 
 - printk:
 	- it write to dmesg which is a ring buffer

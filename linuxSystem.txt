@@ -40,8 +40,11 @@
 			- it uses VFS which is used to provide the same API to deal with different file systems such as ext2, jffs2, etc
 		- I/O:
 			- provides char, block, network devices 
-
 - build process:
+	- in the top level makefile in the source code the macro KERNELVERSION is defined 
+	- u can see the version of the kernel using the command cat /proc/version
+	- kernel is designed to support different platform when u choice a specific arch in the make file u force the build system to choice the code from a specific folder ex:arm
+
 	- in the host machine we have to install gcc, make and perl using the following command
 		- sudo apt install gcc make perl 
 	- to install the cross compile tool chain which enables u to compile arm code on intel processor use the following command
@@ -58,13 +61,51 @@
 				- it is used to adjust the configuration according to 
 		- build the kernel 
 			- make all
-		- install the modules under /lib/modules/$(uname -r ) using
+		- install the modules under /lib/modules/$(uname -r )/kernel using
 			- make modules_install
 
+- configuration:
+	- the idea is to build the kernel with capabilities which u only need as if u build the kernel which support every thing it would be very big to handle 
+
+	-  .config file is produced which has all the configuration which affects the build, while the building it would converted to header file 
+	- make defconfig:
+		- update the configuration by the default value based on the target type
+	- make disclean:
+		- it would delete the .config file from the source file system
+	- make menuconfig:
+		- u get to change the config file using menu 
+
+- target:
+	- vmlinux:
+		- it is stand alone ELF file which has all the symbol resolved 
+		- it consists of multiple files like head.o which is in charge of initalize the kernel
+	- zImage:
+		- it is compressend vmlinux of the kernel
+	- uImage:
+		- it is zImage + uboot header 
+	- module:
+		- build all module which is configured with menuconfig als module
+	- module_install:
+		- install the modules in the path which is defined by INSTALL_MOD_PATH
+
+- toolchain:
+	- it consists of compiler, linker, c library, assembler
+	- using apt install u can download the tool chain on the host laptop 
+		- for cross compile:
+			- sudo apt install crossbuild-essential-armhf
+		- for native compilation:
+			- sudo apt install gcc make perl
+	- u need kernel source file or at least kernel header 
+		- sudo apt install linux-headers-generic 
+		- dpkg -l | linux-headers | awk 'print{$1, $2}'
 
 - LKM frame work:
 	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
-	- compile a piece of code outside the kernel source code 
+	- compile a piece of code outside the kernel source code and then insert it in the kernel 
+	- steps:
+		- .c file via make file would be .o file which is object file via insmod would be inserted in the kernel 
+	- to know which modules are installed
+		- lsmod 
 	- if u build a module and insert it after u build the kernel we call it out of tree code
 	- to build a module:
 		- source file
@@ -72,6 +113,7 @@
 		- make file
 		- make
 	- the module would be built and .ko file would be generated then u can install it using insmod command 
+	- include in the module points to /lib/modules/$(uname -r)/build which points to the header file of the linux source code
 
 - LKM:
 	- module has entry point with is given by the function module_init()
@@ -81,9 +123,20 @@
 
 - LKM make file:
 	- the name of the module which u want to build is giving using:
-		obj-m +=name_of_module.o
+		obj-m += name_of_module.o
 	- rule:
-		make -C "kernel source code" M=$(PWD) modules 
+		build
+			make -C "kernel source code to build folder ex /lib/modules/$(uname -r)/build/" M=$(PWD) modules 
+		install
+			make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules_install
+		- to cross compile we need to sit some variables which are
+			ARCH= arm CROSS_COMPILE=point to tool chain kdir=points to kernel source code top folder 
+			- in cross compile the source code of the kernel should be not in a version state using the following commands u change the state of the kernel
+				make ARCH=arm bcmrpi_defconfig
+				make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- oldconfig
+				make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- prepare
+				make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+
 
 - system start up:
 	- there are three component which we need to start up the system: bootloader, kernel, init process 
@@ -368,34 +421,6 @@
 
 	- port mapped I/O:
 		- instructions which is only used to work with the I/O 
-
-- building the kernel:
-	- in the top level makefile in the source code the macro KERNELVERSION is defined 
-	- u can see the version of the kernel using the command cat /proc/version
-	- kernel is designed to support different platform when u choice a specific arch in the make file u force the build system to choice the code from a specific folder ex:arm
-
-- configuration:
-	- the idea is to build the kernel with capabilities which u only need as if u build the kernel which support every thing it would be very big to handle 
-
-	-  .config file is produced which has all the configuration which affects the build, while the building it would converted to header file 
-	- make disclean:
-		- it would delete the .config file from the source file system
-	- make menuconfig:
-		- u get to change the config file using menu 
-	- make defconfig:
-		- update the configuration by the default value based on the target type
-- target:
-	- vmlinux:
-		- it is stand alone ELF file which has all the symbol resolved 
-		- it consists of multiple files like head.o which is in charge of initalize the kernel
-	- zImage:
-		- it is compressend vmlinux of the kernel
-	- uImage:
-		- it is zImage + uboot header 
-	- module:
-		- build all module which is configured with menuconfig als module
-	- module_install:
-		- install the modules in the path which is defined by INSTALL_MOD_PATH
 
 linux start up:
 	- power on then the bootloader would be executed which has the task to initalize the hardware then would load the kernel to the memory at this point MMU is not active, the kernel image has bootstrape load in itself which has the task to enable MMU and page table this code is made by the CPU vendor not by linux then the call start_kernel() which is developed by linux which would parse the command line and start the init process, at the end the kernel search fot the init process in one of four places:

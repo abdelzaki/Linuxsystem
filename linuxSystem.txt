@@ -2,6 +2,10 @@
 	- RAM at least 8 Mb
 	- storage: at least 4 MB
 
+- architecture of linux system:
+	- at the bottom there is the hardware 
+	- on the top of the hardware there is the kernel which has low level which is HW dependent and High level which is HW independent 
+	- Rootfile system which has application which should run after the kernel boot up and they should have c library which provides interfavce to the kernel
 
 - linux kernel:
 	- kernel lives in kernel space and can access harware and io directly 
@@ -10,10 +14,35 @@
 		- user space executing user code
 		- kernel space in process context in bahalf of a process
 		- kernel space in interrupt context 
-	- kernel code has no access to the c library and has no memory proctection 
+	- kernel code has no access to the c library and has no memory proctection
+
+- toolchain:
+	- it consists of compiler, linker, c library, assembler
+	- component which is needed to build toolchain:
+		- linux header
+		- binary utilities
+		- bootstral compiler
+		- c Library
+		- full c compiler
+	- u can see that c library is part of the tool chain itself so u should use the tool chain which is used 
+
+	- using apt install u can download the tool chain on the host laptop 
+		- for cross compile:
+			- sudo apt install crossbuild-essential-armhf
+			- wget -c https://releases.linaro.org/components/toolchain/binaries/5.3-2016.02/arm-linux-gnueabihf/gcc-linaro-5.3-2016.02-x86_64_arm-linuxgnueabihf.tar.xz
+			- sudo apt install gcc-arm-linux-gnueabihf binutils-arm-linuxgnueabihf
+		- for native compilation:
+			- sudo apt install gcc make perl binutils
+
+		- to get to know the version of the tool chain which u have installed 
+			- arm-linux-gnueabihf-gcc --version
+	- u need kernel source file or at least kernel header 
+		- sudo apt install linux-headers-generic 
+		- dpkg -l | linux-headers | awk 'print{$1, $2}'
+
 - user space:
 	- the code which runs in a low provolige mode
-	- it is linked into glibc 
+	- it is linked into glibc and loader which runs first and check the object file to know which function is needed from the shared library and load it 
 
 - glibc:
 	- every user applictioon in the kernel is linked into glibc 
@@ -88,17 +117,6 @@
 	- module_install:
 		- install the modules in the path which is defined by INSTALL_MOD_PATH
 
-- toolchain:
-	- it consists of compiler, linker, c library, assembler
-	- using apt install u can download the tool chain on the host laptop 
-		- for cross compile:
-			- sudo apt install crossbuild-essential-armhf
-		- for native compilation:
-			- sudo apt install gcc make perl
-	- u need kernel source file or at least kernel header 
-		- sudo apt install linux-headers-generic 
-		- dpkg -l | linux-headers | awk 'print{$1, $2}'
-
 - LKM frame work:
 	- it is a way to enable us to change a part of the kernel without rebuilding the whole system 
 	- compile a piece of code outside the kernel source code and then insert it in the kernel 
@@ -130,7 +148,7 @@
 		install
 			make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules_install
 		- to cross compile we need to sit some variables which are
-			ARCH= arm CROSS_COMPILE=point to tool chain kdir=points to kernel source code top folder 
+			ARCH=arm CROSS_COMPILE=point to tool chain kdir=points to kernel source code top folder 
 			- in cross compile the source code of the kernel should be not in a version state using the following commands u change the state of the kernel
 				make ARCH=arm bcmrpi_defconfig
 				make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- oldconfig
@@ -230,7 +248,10 @@
 	- there is IDT which has pointer to functions which should be called when interrupts happen 
 	- kernel should tell the CPU where to find this table before enabling the interrupts 
 	- processor would interrupt the executing context and notify the kernel that interrupt has happened, OS would execute ISR in response to the interrupt which runs in interrupt context meaning it cannot sleep while executing the interrupt
-	- ISR would run while all other interrupt are enabled except his own interrupt line
+	- ISR would run while all other interrupt are enabled except his own interrupt line remember u can disable interrupt using IRQF_DISABLED
+	- u can disable a specific interrupt line on the interrupt controller and u can disable the interrupt on the procssor itself
+	- to disable interrupt on the procssor local_irq_save(flag), and to restore the interrupt to it is original state local_irq_restore(flags)
+
 
 - to register an interrupt handler to handle a specific interrupt we use the following API: 
 	- request_irq(unsigned int irq, irq_handler_t (*handler_func)(int, void *), unsigned long flags, const char *name, void *dev):
@@ -306,7 +327,6 @@
 	- small block size has disadvantage that the meta data requires to map the block to a file would be large 
 
 - file system:
-
 	- the role of the file system is to provide 2 interface:
 		- user interface is what the user should see 
 		- how the data is stored in the file system and how u can retieve the data 
@@ -338,6 +358,10 @@
 	- bad block table is stored at the last two blocks of the flash
 	- mtd subsystem is divided to application and drivers and export the device as char and block deivce as some operation is possible only on char while other are possible only on block device
 	- mtd is divided to application and drivers application is what i write , driver is how to write it 
+	- MTD enables us to deal with the NOR and NAND the same way from application point of view
+	- eMMC is flash but it is managed flash driver means it has controller which controll the flash
+	- to get information about the nand from the kernel u can use the following command
+		- cat /proc/mtd
 
 	- CFI:
 		- comman flash interface 
